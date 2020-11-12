@@ -1,9 +1,5 @@
 import drawSvg as draw
 import math
-r"""
-use the following command in the command prompt to actually run this script, cairo is a bitch
-python C:\Users\Peter\Documents\PycharmProjects\Hexagons\main.py
-"""
 
 
 def create_hex_grid(img_bounds, hex_size):
@@ -42,6 +38,9 @@ def flat_points(coord, hex_size, closed=False):
 
 
 def to_hex(red, green, blue):
+    red = int(min(max(red, 0), 255))
+    green = int(min(max(green, 0), 255))
+    blue = int(min(max(blue, 0), 255))
     return '#{0:02X}{1:02X}{2:02X}'.format(red, green, blue)
 
 
@@ -49,23 +48,25 @@ if __name__ == "__main__":
     width = 1600
     height = 900
     pic = draw.Drawing(width, height, origin='center', displayInline=False)
-    tile_size = 87
+    tile_size = 91
     hex_grid = create_hex_grid((-width/2, -height/2, width/2, height/2), tile_size)
+
+    # draw background
+    grad = draw.LinearGradient(- width / 2, -height / 2, width / 2, height / 2)
+    grad.addStop(0, to_hex(254, 174, 60))
+    grad.addStop(1, to_hex(254, 246, 203))
+    pic.append(draw.Rectangle(- width / 2, -height / 2, width, height, fill=grad))
 
     # draw a bunch of hexagons
     for f in hex_grid:
         for g in f:
             grad = draw.LinearGradient(g[0] - math.sqrt(3) * tile_size / 2, g[1] + 0.5 * tile_size,
                                        g[0] + math.sqrt(3) * tile_size / 2, g[1] + 1.5 * tile_size)
-            grad.addStop(0, to_hex(255, 180, 0))
-            grad.addStop(0.55, to_hex(255, 121, 30))
-            grad.addStop(1, to_hex(200, 80, 0))
-            pic.append(draw.Lines(*flat_points(g, tile_size), close=True, fill=grad,
-                                  stroke=to_hex(254, 212, 117), stroke_width=4.5))
-    for f in hex_grid:
-        for g in f:
-            pic.append(draw.Lines(*flat_points((g[0], g[1]+5.85), tile_size-5.85), close=True, fill_opacity=0,
-                                  stroke=to_hex(128, 53, 0), stroke_width=6.75))
+            img_grad = (1 * g[0] + g[1]) / 20
+            grad.addStop(0, to_hex(255, 180 + img_grad, 0))
+            grad.addStop(0.55, to_hex(255, 121 + 1.4 * img_grad + 20, 30))
+            grad.addStop(1, to_hex(200 + img_grad, 80 + img_grad, 0))
+            pic.append(draw.Lines(*flat_points((g[0], g[1]+10), tile_size-10), close=True, fill=grad,
+                                  stroke=to_hex(128 + 1.6*img_grad, 53 + img_grad/2, 0), stroke_width=6.25))
     pic.setPixelScale(1)  # Set number of pixels per geometry unit
-    path = r"C:\Users\Peter\Documents\PycharmProjects\Hexagons\images\\"
-    pic.saveSvg(path+'simple hex grad.svg')
+    pic.saveSvg('images\\hex grad grad.svg')
