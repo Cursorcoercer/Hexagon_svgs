@@ -1,4 +1,5 @@
 import drawSvg as draw
+import random
 import math
 
 
@@ -44,29 +45,56 @@ def to_hex(red, green, blue):
     return '#{0:02X}{1:02X}{2:02X}'.format(red, green, blue)
 
 
+def random_color():
+    return to_hex(random.randrange(256), random.randrange(256), random.randrange(256))
+
+
 if __name__ == "__main__":
     width = 1600
     height = 900
     pic = draw.Drawing(width, height, origin='center', displayInline=False)
-    tile_size = 91
+    tile_size = 80
     hex_grid = create_hex_grid((-width/2, -height/2, width/2, height/2), tile_size)
 
     # draw background
-    grad = draw.LinearGradient(- width / 2, -height / 2, width / 2, height / 2)
-    grad.addStop(0, to_hex(254, 174, 60))
-    grad.addStop(1, to_hex(254, 246, 203))
-    pic.append(draw.Rectangle(- width / 2, -height / 2, width, height, fill=grad))
+    grad = draw.LinearGradient(-width / 2, -height / 2, width / 2, height / 2)
+    grad.addStop(0, to_hex(153, 217, 234))
+    grad.addStop(1, to_hex(230, 230, 10))
+    pic.append(draw.Rectangle(-width / 2, -height / 2, width, height, fill=grad))
+
+    grad = draw.LinearGradient(-width / 2, -height / 2, width / 2, height / 2)
+    grad.addStop(0, to_hex(128, 0, 192))
+    grad.addStop(0.5, to_hex(0, 0, 200))
+    grad.addStop(1, to_hex(0, 220, 220))
 
     # draw a bunch of hexagons
+    c1 = random_color()
+    c2 = random_color()
+    c3 = random_color()
     for f in hex_grid:
         for g in f:
-            grad = draw.LinearGradient(g[0] - math.sqrt(3) * tile_size / 2, g[1] + 0.5 * tile_size,
-                                       g[0] + math.sqrt(3) * tile_size / 2, g[1] + 1.5 * tile_size)
+            num = random.randrange(6)
+            if num == 0:
+                grad = draw.LinearGradient(g[0] - math.sqrt(3) * tile_size / 2, g[1] + 0.5 * tile_size,
+                                           g[0] + math.sqrt(3) * tile_size / 2, g[1] + 1.5 * tile_size)
+            elif num == 1:
+                grad = draw.LinearGradient(g[0] - math.sqrt(3) * tile_size / 2, g[1] + 1.5 * tile_size,
+                                           g[0] + math.sqrt(3) * tile_size / 2, g[1] + 0.5 * tile_size)
+            elif num == 2:
+                grad = draw.LinearGradient(g[0], g[1], g[0], g[1] + 2 * tile_size)
+            elif num == 3:
+                grad = draw.LinearGradient(g[0] + math.sqrt(3) * tile_size / 2, g[1] + 1.5 * tile_size,
+                                           g[0] - math.sqrt(3) * tile_size / 2, g[1] + 0.5 * tile_size)
+            elif num == 4:
+                grad = draw.LinearGradient(g[0] + math.sqrt(3) * tile_size / 2, g[1] + 0.5 * tile_size,
+                                           g[0] - math.sqrt(3) * tile_size / 2, g[1] + 1.5 * tile_size)
+            else:
+                grad = draw.LinearGradient(g[0], g[1] + 2 * tile_size, g[0], g[1])
             img_grad = (1 * g[0] + g[1]) / 20
-            grad.addStop(0, to_hex(255, 180 + img_grad, 0))
-            grad.addStop(0.55, to_hex(255, 121 + 1.4 * img_grad + 20, 30))
-            grad.addStop(1, to_hex(200 + img_grad, 80 + img_grad, 0))
-            pic.append(draw.Lines(*flat_points((g[0], g[1]+10), tile_size-10), close=True, fill=grad,
-                                  stroke=to_hex(128 + 1.6*img_grad, 53 + img_grad/2, 0), stroke_width=6.25))
+            grad.addStop(1-math.sqrt(3)/2, c1)
+            grad.addStop(0.5, c2)
+            grad.addStop(math.sqrt(3)/2, c3)
+            pic.append(draw.Lines(*flat_points((g[0], g[1]), tile_size), close=True, fill=grad))
+
     pic.setPixelScale(1)  # Set number of pixels per geometry unit
-    pic.saveSvg('images\\hex grad grad.svg')
+    pic.saveSvg('images\\example.svg')
